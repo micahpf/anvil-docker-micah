@@ -1,4 +1,4 @@
-FROM ghcr.io/bioconductor/ml-verse:3.19 AS build
+FROM ghcr.io/bioconductor/ml-verse:3.19 as build
 
 RUN apt-get update && apt-get install -yq --no-install-recommends \
     gnupg \
@@ -21,9 +21,9 @@ RUN usermod -g users rstudio \
 # google-cloud R packages
 RUN R -e "BiocManager::install(c('AnVIL', 'DataBiosphere/Ronaldo', 'shiny', 'bigrquery', 'googleCloudStorageR', 'tidyverse', 'Seurat', 'markdown', 'SingleCellExperiment', 'GenomicFeatures', 'GenomicAlignments', 'ShortRead', 'DESeq2', 'AnnotationHub', 'ExperimentHub', 'ensembldb', 'scRNAseq', 'scran', 'Rtsne'))"
 
-ENV RSTUDIO_PORT=8001
-ENV RSTUDIO_HOME=/etc/rstudio
-ENV RSTUDIO_USERSETTING=/home/rstudio/.config/rstudio/rstudio-prefs.json
+ENV RSTUDIO_PORT 8001
+ENV RSTUDIO_HOME /etc/rstudio
+ENV RSTUDIO_USERSETTING /home/rstudio/.config/rstudio/rstudio-prefs.json
 
 ADD rserver.conf $RSTUDIO_HOME/rserver.conf
 
@@ -39,17 +39,10 @@ RUN find ${RSTUDIO_HOME}/scripts -name '*.sh' -type f | xargs chmod +x \
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-FROM ghcr.io/bioconductor/ml-verse:3.19 AS final
+
+FROM ghcr.io/bioconductor/ml-verse:3.19 as final
 COPY --from=build / /
 
-ENV RSTUDIO_PORT=8001
-ENV RSTUDIO_HOME=/etc/rstudio
-ENV RSTUDIO_USERSETTING=/home/rstudio/.config/rstudio/rstudio-prefs.json
-
-## Micah's additions
-# Install gh for github authentication
-RUN apt-get update && apt-get install gh
-
-# Add a .bash_profile to set git config, copy workspace files into container etc.
-COPY .bash_profile /home/rstudio/.bash_profile
-
+ENV RSTUDIO_PORT 8001
+ENV RSTUDIO_HOME /etc/rstudio
+ENV RSTUDIO_USERSETTING /home/rstudio/.config/rstudio/rstudio-prefs.json
