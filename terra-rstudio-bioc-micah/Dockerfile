@@ -3,6 +3,7 @@ FROM ghcr.io/bioconductor/ml-verse:3.19 AS build
 RUN apt-get update && apt-get install -yq --no-install-recommends \
     gnupg \
     lsb-release \
+    gh \
  && echo "deb http://packages.cloud.google.com/apt cloud-sdk main" > /etc/apt/sources.list.d/google-cloud-sdk.list \
  && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - \
  && apt-get update \
@@ -10,8 +11,6 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
     google-cloud-sdk \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
-
-#RUN apt-get update && apt-get install -yq --no-install-recommends gh
 
 RUN pip3 -V \
     && pip3 install --no-cache-dir -U crcmod terra-notebook-utils torch==2.0.1
@@ -41,6 +40,7 @@ RUN find ${RSTUDIO_HOME}/scripts -name '*.sh' -type f | xargs chmod +x \
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
+COPY config/* ~/
 
 FROM ghcr.io/bioconductor/ml-verse:3.19 AS final
 COPY --from=build / /
